@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using UniversitySystem.API.Middlewares;
 using UniversitySystem.Infrastructure.Data;
 using UniversitySystem.Infrastructure.Extentions;
 
@@ -16,17 +17,20 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
+    var masterDb = scope.ServiceProvider.GetRequiredService<MasterDbContext>();
+    masterDb.Database.Migrate();
+
+    var tenants = masterDb.Tenants.ToList();
+    foreach (var tenant in tenants)
     {
-        var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"? Error applying migration: {ex.Message}");
+        var optionsBuilder = new DbContextOptionsBuilder<FacultyDbContext>();
+        optionsBuilder.UseSqlServer(tenant.ConnectionString);
+
+        using var facultyDb = new FacultyDbContext(optionsBuilder.Options);
+        facultyDb.Database.Migrate();
     }
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,6 +40,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthorization();
 

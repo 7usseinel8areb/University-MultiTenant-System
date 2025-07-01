@@ -1,6 +1,23 @@
-@UniversitySystem.API_HostAddress = http://localhost:5158
+@UniversitySystem.API_HostAddress = https://localhost:44303
 
 GET {{UniversitySystem.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{UniversitySystem.API_HostAddress}}/api/students
+Faculty-Code: XYZ
+
+###
+
+POST {{UniversitySystem.API_HostAddress}}/api/students
+Content-Type: application/json
+Faculty-Code: XYZ
+
+{
+  "fullName": "Hussein",
+  "nationalId": "Egyption",
+  "email": "string",
+  "dateOfBirth": "2025-07-01T10:24:56.511Z"
+}
+
